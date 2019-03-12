@@ -1,6 +1,7 @@
 from multiprocessing import Array
 from ctypes import c_ulong, c_ubyte
 import numpy as np
+import copy
 
 from dc_gym.monitor.iroko_monitor import BandwidthCollector
 from dc_gym.monitor.iroko_monitor import QueueCollector
@@ -129,7 +130,8 @@ class StateManager:
             # print("State %d: %s " % (index, state))
             obs.append(np.array(state))
         # Save collected data
-        self.data["stats"].append(self.stats)
+        arr_temp = copy.deepcopy(self.stats)
+        self.data["stats"].append(arr_temp)
         return np.array(obs)
 
     def compute_reward(self, curr_action):
