@@ -15,6 +15,10 @@ class RewardFunction:
 
     def get_reward(self, stats, deltas, actions):
         reward = 0
+        action_reward = 0
+        bw_reward = 0
+        queue_reward = 0
+        std_dev_reward = 0
         if "action" in self.reward_model:
             action_reward = self._action_reward(actions)
             # print("action: %f" % action_reward, end='')
@@ -33,7 +37,7 @@ class RewardFunction:
             reward += std_dev_reward
             # print("std_dev: %f " % std_dev_reward, end='')
         # print("Total: %f" % reward)
-        return reward
+        return reward, action_reward, bw_reward, queue_reward, std_dev_reward
 
     def _adjust_reward(self, reward, queue_deltas):
         if "olimit" in self.reward_model:
