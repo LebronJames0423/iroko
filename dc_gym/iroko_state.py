@@ -97,6 +97,10 @@ class StateManager:
         runtime_name = "%s/runtime_statistics_%s.npy" % (data_dir, agent)
         self.stats_file = open(runtime_name, 'wb+')
         self.data["reward"] = []
+        self.data["action_reward"] = []
+        self.data["bw_reward"] = []
+        self.data["queue_reward"] = []
+        self.data["std_dev_reward"] = []
         self.data["actions"] = []
         self.data["stats"] = []
 
@@ -136,9 +140,12 @@ class StateManager:
 
     def compute_reward(self, curr_action):
         # Compute the reward
-        reward = self.dopamin.get_reward(
-            self.stats, self.deltas, curr_action)
+        reward, action_reward, bw_reward, queue_reward, std_dev_reward = self.dopamin.get_reward(self.stats, self.deltas, curr_action)
         self.data["reward"].append(reward)
+        self.data["action_reward"].append(action_reward)
+        self.data["bw_reward"].append(bw_reward)
+        self.data["queue_reward"].append(queue_reward)
+        self.data["std_dev_reward"].append(std_dev_reward)
         self.data["actions"].append(curr_action)
         return reward
 
