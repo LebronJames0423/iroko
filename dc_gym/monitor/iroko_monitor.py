@@ -78,6 +78,26 @@ class BandwidthCollector(Collector):
 
     def _collect(self):
         self._get_bandwidths(self.iface_list)
+        
+     
+class RTTCollector(Collector):
+
+    def __init__(self, iface_list, shared_stats_2, stats_dict_2):
+        Collector.__init__(self, iface_list)
+        self.name = 'StatsCollector'
+        self.stats = shared_stats_2
+        self.stats_dict = stats_dict_2
+        self.stats_offset = len(stats_dict_2)
+
+    def _get_rtts(self, iface_list):
+        cmd = "ss -ti | grep -Eo ' rtt:[0-9]*\.[0-9]*' | grep -Eo '[0-9]*\.[0-9]*'"
+        proc = subprocess.Popen([cmd], stdout=subprocess.PIPE, shell=True)
+        proc.wait()
+        output, _ = proc.communicate()
+        output = output.decode()
+
+    def _collect(self):
+        self._get_rtts(self.iface_list)
 
 
 class Qdisc(ctypes.Structure):
