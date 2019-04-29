@@ -32,6 +32,7 @@ class BaseEnv(openAIGym):
         # set up variables for the progress bar
         self.steps = 0
         self.reward = 0
+        self.reward_2 = 0
         # self.progress_bar = tqdm(total=self.conf["iterations"], leave=False)
         # self.progress_bar.clear()
 
@@ -61,12 +62,13 @@ class BaseEnv(openAIGym):
         num_ports = len(self.topo.get_sw_ports())
         num_features = self.state_man.get_feature_length()
         num_actions = len(self.topo.host_ctrl_map)
+        print('-----', num_ports, num_features, num_actions)
         self.action_space = spaces.Box(
             low=self.ACTION_MIN, high=self.ACTION_MAX,
             dtype=np.float32, shape=(num_actions,))
         self.observation_space = spaces.Box(
             low=-np.inf, high=np.inf, dtype=np.int64,
-            shape=(num_ports * num_features,))
+            shape=(4,))
 
     def set_traffic_matrix(self, index):
         traffic_files = self.topo.TRAFFIC_FILES
@@ -87,6 +89,7 @@ class BaseEnv(openAIGym):
             self.traffic_gen.stop_traffic()
 
             self.traffic_gen.start_traffic(self.input_file, self.output_dir)
+        print('-----------------shape', self.observation_space.shape)
         return np.zeros(self.observation_space.shape)
 
     def render(self, mode='human'):
