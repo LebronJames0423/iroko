@@ -69,6 +69,12 @@ class BandwidthCollector(Collector):
             proc.wait()
             output, _ = proc.communicate()
             output = output.decode()
+#            print("output------------------", output)
+#            print("----------------------------------------------------------------------------------------------")
+#            os.system("ss -ti")
+#            os.system("ss -ti | grep -Eo ' rtt:[0-9]*\.[0-9]*' | grep -Eo '[0-9]*\.[0-9]*'")
+#            os.system("ss -ti | grep 'rcv_rtt:[0-9]*.[0-9]*' -o")
+#            os.system("ss -ti | grep -Eo 'cwnd:[0-9]*' | grep -Eo '[0-9]*'")
             bw = output.split(',')
             if bw[0] != 'n/a' and bw[1] != ' n/a\n':
                 bps_rx = int(float(bw[0]) * 1000)
@@ -78,16 +84,17 @@ class BandwidthCollector(Collector):
 
     def _collect(self):
         self._get_bandwidths(self.iface_list)
-        
-     
+
+
+
 class RTTCollector(Collector):
 
     def __init__(self, iface_list, shared_stats_2, stats_dict_2):
         Collector.__init__(self, iface_list)
-        self.name = 'StatsCollector'
-        self.stats = shared_stats_2
-        self.stats_dict = stats_dict_2
-        self.stats_offset = len(stats_dict_2)
+        self.name = 'RTTCollector'
+        self.stats_2 = shared_stats_2
+        self.stats_dict_2 = stats_dict_2
+        self.stats_offset_2 = len(stats_dict_2)
 
     def _get_rtts(self, iface_list):
         cmd = "ss -ti | grep -Eo ' rtt:[0-9]*\.[0-9]*' | grep -Eo '[0-9]*\.[0-9]*'"
@@ -95,9 +102,76 @@ class RTTCollector(Collector):
         proc.wait()
         output, _ = proc.communicate()
         output = output.decode()
+        rtt = output.split('\n')
+        sum = 0
+        for i in range(len(rtt)-1):
+            sum = sum + float(rtt[i])*1000
+        avg_rtt = sum/(len(rtt)-1)
+        self.stats_2[0][self.stats_dict_2["rtt"]] = avg_rtt
+#        print('------------------------------------------------', self.stats_2)
 
     def _collect(self):
         self._get_rtts(self.iface_list)
+
+
+
+class RCV_RTTCollector(Collector):
+
+    def __init__(self, iface_list, shared_stats_2, stats_dict_2):
+        Collector.__init__(self, iface_list)
+        self.name = 'RCV_RTTCollector'
+        self.stats_2 = shared_stats_2
+        self.stats_dict_2 = stats_dict_2
+        self.stats_offset_2 = len(stats_dict_2)
+
+    def _get_rcv_rtts(self, iface_list):
+        cmd = "ss -ti | grep -Eo 'rcv_rtt:[0-9]*' | grep -Eo '[0-9]*'"
+        proc = subprocess.Popen([cmd], stdout=subprocess.PIPE, shell=True)
+        proc.wait()
+        output, _ = proc.communicate()
+        output = output.decode()
+        rcv_rtt = output.split('\n')
+        sum = 0
+        for i in range(len(rcv_rtt)-1):
+            sum = sum + float(rcv_rtt[i])*1000
+        avg_rcv_rtt = sum/(len(rcv_rtt)-1)
+        self.stats_2[0][self.stats_dict_2["rcv_rtt"]] = avg_rcv_rtt
+#        print('------------------------------------------------', self.stats_2)
+
+    def _collect(self):
+        self._get_rcv_rtts(self.iface_list)
+
+
+
+
+class CWNDCollector(Collector):
+
+    def __init__(self, iface_list, shared_stats_2, stats_dict_2):
+        Collector.__init__(self, iface_list)
+        self.name = 'CWNDCollector'
+        self.stats_2 = shared_stats_2
+        self.stats_dict_2 = stats_dict_2
+        self.stats_offset_2 = len(stats_dict_2)
+
+    def _get_cwnds(self, iface_list):
+        cmd = "ss -ti | grep -Eo 'cwnd:[0-9]*' | grep -Eo '[0-9]*\'"
+        proc = subprocess.Popen([cmd], stdout=subprocess.PIPE, shell=True)
+        proc.wait()
+        output, _ = proc.communicate()
+        output = output.decode()
+        cwnd = output.split('\n')
+#        print(cwnd)
+        sum = 0
+        for i in range(len(cwnd)-1):
+            sum = sum + float(cwnd[i])*1000
+        avg_cwnd = sum/(len(cwnd)-1)
+        self.stats_2[0][self.stats_dict_2["cwnd"]] = avg_cwnd
+#        print('------------------------------------------------', self.stats_2)
+
+    def _collect(self):
+        self._get_cwnds(self.iface_list)
+
+
 
 
 class Qdisc(ctypes.Structure):
@@ -106,11 +180,13 @@ class Qdisc(ctypes.Structure):
 
 class QueueCollector(Collector):
 
-    def __init__(self, iface_list, shared_stats, stats_dict):
+    def __init__(self, iface_list, shared_stats, stats_dict, shared_stats_2, stats_dict_2):
         Collector.__init__(self, iface_list)
         self.name = 'QueueCollector'
         self.stats = shared_stats
         self.stats_dict = stats_dict
+        self.stats_2 = shared_stats_2
+        self.stats_dict_2 = stats_dict_2
         self.stats_offset = len(stats_dict)
         self.q_lib = self._init_stats()
 
@@ -134,6 +210,8 @@ class QueueCollector(Collector):
     #         self.q_lib.delete_qdisc_monitor(qdisc)
 
     def _get_qdisc_stats(self, iface_list):
+        sum = 0
+        cnt = 0
         for index, iface in enumerate(iface_list):
             qdisc = self.q_lib.init_qdisc_monitor(iface.encode('ascii'))
             queue_backlog = self.q_lib.get_qdisc_backlog(qdisc)
@@ -144,11 +222,15 @@ class QueueCollector(Collector):
             self.stats[index][self.stats_dict["backlog"]] = queue_backlog
             self.stats[index][self.stats_dict["olimit"]] = queue_overlimits
             self.stats[index][self.stats_dict["drops"]] = queue_drops
+            sum += queue_drops
+            cnt += 1
             # # tx rate
             # self.stats[index][self.stats_dict["rate_bps"]] = queue_rate_bps
             # # packet rate
             # self.stats[index][self.stats_dict["rate_pps"]] = queue_rate_pps
             self.q_lib.delete_qdisc_monitor(qdisc)
+        avg_drops = sum / cnt
+        self.stats_2[0][self.stats_dict_2["drops"]] = avg_drops
 
     def _get_qdisc_stats_old(self, iface_list):
         re_dropped = re.compile(r'(?<=dropped )[ 0-9]*')
