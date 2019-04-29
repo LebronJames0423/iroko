@@ -63,7 +63,7 @@ class DCEnv(BaseEnv):
         for i in range(len(rtt)-1):
             sum = sum + float(rtt[i])*1000
         avg_rtt = sum/(len(rtt)-1)
-        self.reward_2 = avg_rtt
+        self.reward_2 = -1 * avg_rtt
 #        print("----------------------", avg_rtt)
 
         return obs.flatten(), self.reward, done, {}
