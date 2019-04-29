@@ -64,6 +64,11 @@ class DCEnv(BaseEnv):
             sum = sum + float(rtt[i])*1000
         avg_rtt = sum/(len(rtt)-1)
         self.reward_2 = -1 * avg_rtt
+        
+        with open('reward_2.txt', 'w') as f:
+            f.write(self.reward_2)
+            f.write('\n')
+        
 #        print("----------------------", avg_rtt)
 
         return obs.flatten(), self.reward, done, {}
