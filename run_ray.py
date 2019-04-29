@@ -22,12 +22,14 @@ lib_dir = os.path.dirname(dc_gym.__file__)
 INPUT_DIR = lib_dir + '/inputs'
 OUTPUT_DIR = cwd + '/results'
 
+model_dir = '/home/ubuntu/iroko/saved_model'
+
 PARSER = argparse.ArgumentParser()
 PARSER.add_argument('--env', '-e', dest='env',
                     default='iroko', help='The platform to run.')
 PARSER.add_argument('--topo', '-to', dest='topo',
                     default='dumbbell', help='The topology to operate on.')
-PARSER.add_argument('--agent', '-a', dest='agent', default="PG",
+PARSER.add_argument('--agent', '-a', dest='agent', default="PPO",
                     help='must be string of either: PPO, DDPG, PG,'
                          ' DCTCP, TCP_NV, PCC, or TCP', type=str.lower)
 PARSER.add_argument('--timesteps', '-t', dest='timesteps',
@@ -35,7 +37,7 @@ PARSER.add_argument('--timesteps', '-t', dest='timesteps',
                     help='total number of timesteps to train rl agent, '
                          'if tune specified is wall clock time')
 PARSER.add_argument('--checkpoint_freq', '-cf', dest='checkpoint_freq',
-                    type=int, default=0,
+                    type=int, default=1,
                     help='how often to checkpoint model')
 PARSER.add_argument('--restore', '-r', dest='restore', default=None,
                     help='Path to checkpoint to restore (for testing), must '
@@ -65,6 +67,8 @@ class MaxAgent(Agent):
         while not done:
             action = self.env.action_space.high
             obs, r, done, info = self.env.step(action)
+            #print('obs-------------', obs)
+            #print('r--------------', r)
             reward += r
             steps += 1
             if steps >= self.config["env_config"]["iterations"]:
@@ -83,6 +87,7 @@ def check_dir(directory):
 
 
 def get_env(env_config):
+    print('---------------------------', env_config)
     return EnvFactory.create(env_config)
 
 
@@ -249,8 +254,14 @@ def configure_ray(agent):
 def run(config):
     agent_class = get_agent(config["env_config"]["agent"])
     agent = agent_class(config=config, env="dc_env")
-    agent.train()
-    print('Generator Finished. Simulation over. Clearing dc_env...')
+#    agent.restore('/home/ubuntu/ray_results_uc_2/DDPG_dc_env_2019-03-30_05-54-40tNGazV/checkpoint_40/checkpoint-40')
+
+    for i in range(20):
+        print(i)
+        agent.train()
+#    checkpoint = agent.save()
+#    print('----------------', checkpoint)
+#    print('Generator Finished. Simulation over. Clearing dc_env...')
 
 
 def tune_run(config):
@@ -271,10 +282,10 @@ def init():
     config = configure_ray(ARGS.agent)
     print("Starting experiment.")
     # Basic ray train currently does not work, always use tune for now
-    # if ARGS.tune:
-    tune_run(config)
-    # else:
-    #    run(config)
+    if ARGS.tune:
+        tune_run(config)
+    else:
+        run(config)
     # Give enough time to shut down
     time.sleep(5)
     print("Experiment has completed.")
