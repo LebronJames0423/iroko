@@ -1,4 +1,3 @@
-                                                                                                                                                                                    97,1          Bot
 from __future__ import print_function
 import os
 import subprocess
@@ -17,16 +16,16 @@ OUTPUT_DIR = exec_dir + '/results'
 PLOT_DIR = exec_dir + '/plots'
 #RL_ALGOS = ["PPO", "PG", "DDPG"]
 #TCP_ALGOS = ["DCTCP", "TCP_NV"]
-RL_ALGOS = ["DDPG"]
+RL_ALGOS = ["PPO"]
 TCP_ALGOS = []
 ALGOS = TCP_ALGOS + RL_ALGOS
 #TRANSPORT = ["udp", "tcp"]
 TRANSPORT = ["udp"]
 RUNS = 1
 STEPS = 28000
-#TOPO = "dumbbell"
-TOPO = "fattree"
-TUNE = False
+TOPO = "dumbbell"
+#TOPO = "fattree"
+TUNE = True
 RESTORE = False
 RESTORE_PATH = exec_dir + "/checkpoint-1"
 
@@ -46,6 +45,7 @@ def generate_testname(output_dir):
     # Host name and a time stamp
     testname = "%s_%s" % (socket.gethostname(), n_folders)
     return testname
+
 
 def dump_config(path):
     test_config = {}
