@@ -80,3 +80,4 @@ class RewardFunction:
             queue = stats[index][self.stats_dict["backlog"]]
             queue_reward -= (float(queue) / float(self.max_queue))**2
         return queue_reward * weight * 5
+
