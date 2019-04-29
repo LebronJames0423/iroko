@@ -68,7 +68,7 @@ class BaseEnv(openAIGym):
             dtype=np.float32, shape=(num_actions,))
         self.observation_space = spaces.Box(
             low=-np.inf, high=np.inf, dtype=np.int64,
-            shape=(4,))
+            shape=(num_ports * num_features,))
 
     def set_traffic_matrix(self, index):
         traffic_files = self.topo.TRAFFIC_FILES
