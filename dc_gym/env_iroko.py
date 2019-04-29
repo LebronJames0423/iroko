@@ -32,16 +32,16 @@ class DCEnv(BaseEnv):
 #        print("----------------------", action*100)
         
         # action 1
-#        self.bw_ctrl.broadcast_bw(pred_bw, self.topo.host_ctrl_map)
+        self.bw_ctrl.broadcast_bw(pred_bw, self.topo.host_ctrl_map)
         # action 2
-        cmd0 = ("sudo tc qdisc add dev sw1-eth2 root netem delay %dms" % (action[0]*100))
-        cmd1 = ("sudo tc qdisc add dev sw1-eth3 root netem delay %dms" % (action[1]*100))
-        cmd2 = ("sudo tc qdisc add dev sw2-eth2 root netem delay %dms" % (action[2]*100))
-        cmd3 = ("sudo tc qdisc add dev sw2-eth3 root netem delay %dms" % (action[3]*100))
-        os.system(cmd0)
-        os.system(cmd1)
-        os.system(cmd2)
-        os.system(cmd3)
+#        cmd0 = ("sudo tc qdisc add dev sw1-eth2 root netem delay %dms" % (action[0]*100))
+#        cmd1 = ("sudo tc qdisc add dev sw1-eth3 root netem delay %dms" % (action[1]*100))
+#        cmd2 = ("sudo tc qdisc add dev sw2-eth2 root netem delay %dms" % (action[2]*100))
+#        cmd3 = ("sudo tc qdisc add dev sw2-eth3 root netem delay %dms" % (action[3]*100))
+#        os.system(cmd0)
+#        os.system(cmd1)
+#        os.system(cmd2)
+#        os.system(cmd3)
 
         # observe for WAIT seconds minus time needed for computation
         max_sleep = max(self.WAIT - (time.time() - self.start_time), 0)
@@ -66,4 +66,4 @@ class DCEnv(BaseEnv):
         self.reward_2 = avg_rtt
 #        print("----------------------", avg_rtt)
 
-        return obs_2.flatten(), self.reward_2, done, {}
+        return obs.flatten(), self.reward, done, {}
