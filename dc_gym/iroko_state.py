@@ -244,7 +244,7 @@ class StateManager:
         self.data["stats_2"].append(arr_temp_2)
 #        print("-------------------", self.data["stats"][-1])
 #        print("+++++++++++++++++++", self.data["stats_2"][-1])
-        return np.array(obs), np.array(obs_2)
+        return np.array(obs)
 
     def compute_reward(self, curr_action):
         # Compute the reward
