@@ -48,26 +48,26 @@ class DCEnv(BaseEnv):
         time.sleep(max_sleep)
         self.start_time = time.time()
 
-        obs, obs_2 = self.state_man.observe()
+        obs = self.state_man.observe()
 #        print('-------------obs', obs, obs_2)
         self.reward = self.state_man.compute_reward(pred_bw)
 
-        cmd = "ss -ti | grep -Eo ' rtt:[0-9]*\.[0-9]*' | grep -Eo '[0-9]*\.[0-9]*'"
-        proc = subprocess.Popen([cmd], stdout=subprocess.PIPE, shell=True)
-        proc.wait()
-        output, _ = proc.communicate()
-        output = output.decode()
+        #cmd = "ss -ti | grep -Eo ' rtt:[0-9]*\.[0-9]*' | grep -Eo '[0-9]*\.[0-9]*'"
+        #proc = subprocess.Popen([cmd], stdout=subprocess.PIPE, shell=True)
+        #proc.wait()
+        #output, _ = proc.communicate()
+        #output = output.decode()
 
-        rtt = output.split('\n')
-        sum = 0
-        for i in range(len(rtt)-1):
-            sum = sum + float(rtt[i])*1000
-        avg_rtt = sum/(len(rtt)-1)
-        self.reward_2 = -1 * avg_rtt
+        #rtt = output.split('\n')
+        #sum = 0
+        #for i in range(len(rtt)-1):
+            #sum = sum + float(rtt[i])*1000
+        #avg_rtt = sum/(len(rtt)-1)
+        #self.reward_2 = -1 * avg_rtt
         
-        with open('reward_2.txt', 'w') as f:
-            f.write(self.reward_2)
-            f.write('\n')
+        #with open('reward_2.txt', 'w') as f:
+            #f.write(self.reward_2)
+            #f.write('\n')
         
 #        print("----------------------", avg_rtt)
 
